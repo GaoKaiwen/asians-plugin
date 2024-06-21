@@ -1,0 +1,8 @@
+name: asians-plugin
+version: '${project.version}'
+main: com.asians.asiansplugin.AsiansPlugin
+api-version: 1.21
+commands:
+  lava:
+    description: lava commands
+    usage: /<command>
