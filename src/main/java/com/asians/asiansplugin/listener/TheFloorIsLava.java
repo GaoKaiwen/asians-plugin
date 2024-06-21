@@ -38,19 +38,38 @@ public class TheFloorIsLava implements Listener, CommandExecutor, TabCompleter {
         TheFloorIsLavaRunnable theFloorIsLavaRunnable = new TheFloorIsLavaRunnable(plugin, lavaLocation, lavaLocation.getWorld().getMinHeight());
         theFloorIsLavaRunnable.runTaskTimer(plugin, 0, 20 * interval);
         tasksStates.add(theFloorIsLavaRunnable);
+        plugin.getServer().broadcastMessage(ChatColor.GOLD + player.getName() + ": " + ChatColor.DARK_RED + "THE FLOOR IS LAVA!!!");
     }
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if(strings.length == 2) {
+        if(strings.length == 1) {
+            if(commandSender instanceof Player) {
+                Player player = (Player) commandSender;
+                Location location = player.getLocation();
+                if("start".equals(strings[0])) {
+                    TheFloorIsLavaRunnable theFloorIsLavaRunnable = new TheFloorIsLavaRunnable(plugin, location, location.getWorld().getMinHeight());
+                    theFloorIsLavaRunnable.runTaskTimer(plugin, 0, 20 * interval);
+                    tasksStates.add(theFloorIsLavaRunnable);
+                    plugin.getServer().broadcastMessage(ChatColor.GOLD + player.getName() + ": " + ChatColor.DARK_RED + "THE FLOOR IS LAVA!!!");
+                    return true;
+                } else if("cancel".equals(strings[0])) {
+                    tasksStates.getLast().cancel();
+                    tasksStates.removeLast();
+                    plugin.getServer().broadcastMessage(ChatColor.GRAY + "Lava shut down!");
+                    return true;
+                }
+            }
+        } else if(strings.length == 2) {
             if("interval".equals(strings[0])) {
                 try {
                     interval = Integer.parseInt(strings[1]);
                     TheFloorIsLavaRunnable lastRunnable = tasksStates.getLast();
                     int lavaLevel = lastRunnable.getCurrentLavaLevel();
+                    Location location = lastRunnable.getLocation();
                     lastRunnable.cancel();
                     tasksStates.removeLast();
-                    TheFloorIsLavaRunnable newTheFloorIsLavaRunnable = new TheFloorIsLavaRunnable(plugin, lavaLocation, lavaLevel);
+                    TheFloorIsLavaRunnable newTheFloorIsLavaRunnable = new TheFloorIsLavaRunnable(plugin, location, lavaLevel);
                     newTheFloorIsLavaRunnable.runTaskTimer(plugin, 0, 20 * interval);
                     tasksStates.add(newTheFloorIsLavaRunnable);
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "Lava interval changed to " + ChatColor.DARK_BLUE + interval + "s");
@@ -65,7 +84,7 @@ public class TheFloorIsLava implements Listener, CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
-        List<String> firstArgs = Arrays.asList("interval");
+        List<String> firstArgs = Arrays.asList("interval", "start", "cancel");
         List<String> secondArgs = Arrays.asList(String.valueOf(interval));
         if(strings.length == 1) {
             return getCompletions(firstArgs, strings[0].toLowerCase());

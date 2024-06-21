@@ -44,7 +44,8 @@ public class TheFloorIsLavaRunnable extends BukkitRunnable {
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
                 Block block = world.getBlockAt(x, currentLavaLevel, z);
-                if(!block.getType().isSolid() && currentLavaLevel <= getSurfaceBlockLevel(world, x, z)) {
+                int surfaceBlockLevel = getSurfaceBlockLevel(world, x, z);
+                if(currentLavaLevel <= surfaceBlockLevel && block.getType() != Material.AIR) {
                     block.setType(material);
                 }
             }
@@ -72,5 +73,13 @@ public class TheFloorIsLavaRunnable extends BukkitRunnable {
 
     public void setCurrentLavaLevel(int currentLavaLevel) {
         this.currentLavaLevel = currentLavaLevel;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 }
