@@ -5,4 +5,4 @@ api-version: 1.21
 commands:
   lava:
     description: lava commands
-    usage: "Usage: /lava [interval 20] | start | cancel"
+    usage: "Usage: /lava [interval 20] | [start 5] | cancel"

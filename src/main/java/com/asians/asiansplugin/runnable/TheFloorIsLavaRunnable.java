@@ -11,41 +11,44 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class TheFloorIsLavaRunnable extends BukkitRunnable {
 
     private final AsiansPlugin plugin;
-    private int halfOfRegionSide = 20;
+    private int radius;
     private Location location;
     private World world;
     private int currentLavaLevel;
-    private int highestLevel;
+    private int highestBlockLevel;
 
-    public TheFloorIsLavaRunnable(AsiansPlugin plugin, Location location, int currentLavaLevel) {
+    public TheFloorIsLavaRunnable(AsiansPlugin plugin, Location location, int radius, int currentLavaLevel) {
         this.plugin = plugin;
+        this.radius = radius;
         this.location = location;
         world = location.getWorld();
         this.currentLavaLevel = currentLavaLevel;
-        highestLevel = currentLavaLevel + 2;
+        highestBlockLevel = location.getWorld().getMinHeight();
     }
 
     @Override
     public void run() {
-        plugin.getServer().broadcastMessage(ChatColor.YELLOW + "Lava is going up from Y: " + ChatColor.BLUE + currentLavaLevel + ChatColor.YELLOW + "\t X: " + ChatColor.AQUA + location.getX() + ChatColor.YELLOW + " Z: " + ChatColor.AQUA + location.getZ());
+        plugin.getServer().broadcastMessage(ChatColor.YELLOW + "Lava is going up from Y: " + ChatColor.BLUE + currentLavaLevel + ChatColor.YELLOW + "\t X: " + ChatColor.AQUA + (int) location.getX() + ChatColor.YELLOW + " Z: " + ChatColor.AQUA + (int) location.getZ());
         setRegionMaterial(Material.LAVA);
-        if(currentLavaLevel++ >= highestLevel) {
+        if(currentLavaLevel > highestBlockLevel + 1) {
+            plugin.getServer().broadcastMessage(ChatColor.BLUE + "Lava shut down!");
             this.cancel();
         }
+        currentLavaLevel++;
     }
 
     private void setRegionMaterial(Material material) {
-        int minX = location.getBlockX() - halfOfRegionSide;
-        int minZ = location.getBlockZ() - halfOfRegionSide;
+        int minX = (int) Math.floor(location.getBlockX() - radius / 2);
+        int minZ = (int) Math.floor(location.getBlockZ() - radius / 2);
 
-        int maxX = location.getBlockX() + halfOfRegionSide;
-        int maxZ = location.getBlockZ() + halfOfRegionSide;
+        int maxX = (int) Math.floor(location.getBlockX() + radius / 2);
+        int maxZ = (int) Math.floor(location.getBlockZ() + radius / 2);
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
                 Block block = world.getBlockAt(x, currentLavaLevel, z);
                 int surfaceBlockLevel = getSurfaceBlockLevel(world, x, z);
-                if(currentLavaLevel <= surfaceBlockLevel && block.getType() != Material.AIR) {
+                if(currentLavaLevel <= surfaceBlockLevel + 1 && block.getType() == Material.AIR) {
                     block.setType(material);
                 }
             }
@@ -57,9 +60,9 @@ public class TheFloorIsLavaRunnable extends BukkitRunnable {
 
         for (int y = maxY - 1; y >= world.getMinHeight(); y--) {
             Block block = world.getBlockAt(x, y, z);
-            if (block.getType() != Material.AIR) {
-                if(y > highestLevel) {
-                    highestLevel = y;
+            if (block.getType() != Material.AIR && block.getType() != Material.LAVA) {
+                if(y > highestBlockLevel) {
+                    highestBlockLevel = y;
                 }
                 return y;
             }
@@ -81,5 +84,13 @@ public class TheFloorIsLavaRunnable extends BukkitRunnable {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public int getRadius() {
+        return radius;
+    }
+
+    public void setRadius(int radius) {
+        this.radius = radius;
     }
 }
